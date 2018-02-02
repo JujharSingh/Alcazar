@@ -6,11 +6,12 @@ extern "C" { //ya its c tell the linker
 #include "lua-5.1.5/lauxlib.h"
 #include "lua-5.1.5/lbaselib.h"
 #include "lua-5.1.5/lualib.h"
-#include "lua-5.1.5/lobject.h"
 } //include lua libs 
 
 #include <map>
 #include <functional>
+
+void wrap(lua_State *L, int direction, int idx);
 
 int RobloxGlobalIndex(lua_State *L);
 int RobloxIndex(lua_State *L);
