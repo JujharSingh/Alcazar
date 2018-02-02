@@ -5,12 +5,12 @@
 
 #include "addresses.h"
 
-extern "C" { //ya its c tell the linker
+extern "C" {
 #include "lua-5.1.5/lua.h"
 #include "lua-5.1.5/lobject.h"
 #include "lua-5.1.5/lauxlib.h"
 #include "lua-5.1.5/lualib.h"
-} //include lua libs 
+}
 
 #include <string>  
 

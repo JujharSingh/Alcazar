@@ -21,10 +21,6 @@ int wrappedMM(lua_State *L, const char *mm)
 			wrap(L, FROM_RBX, resIdx);
 		}
 
-		/*rbxgetglobal(RbxState, "print");
-		rbxpushvalue(RbxState, -2);
-		rbxpcall(RbxState, 1, 0);*/
-
 		return nargs;
 	}
 	else {
@@ -34,18 +30,28 @@ int wrappedMM(lua_State *L, const char *mm)
 	}
 }
 
-std::map<std::string, std::function<int(lua_State*)>> wrappedMMs{
-	{ "__index", std::bind(wrappedMM, std::placeholders::_1, "__index") },
-{ "__newindex", std::bind(wrappedMM, std::placeholders::_1, "__newindex") },
-{ "__call", std::bind(wrappedMM, std::placeholders::_1, "__call") },
-{ "__add", std::bind(wrappedMM, std::placeholders::_1, "__add") },
-{ "__next", std::bind(wrappedMM, std::placeholders::_1, "__next") },
-};
+int functionhandler(lua_State *L)
+{
+	auto nargs = lua_gettop(L);
+
+	auto nres = rbxgettop(RbxState) - 1;
+		
+	for (auto argIdx = 1; argIdx <= nargs; argIdx++) {
+		wrap(L, TO_RBX, argIdx);
+	}
+
+	rbxpcall(RbxState, nargs, LUA_MULTRET, 0);
+
+	nres = rbxgettop(RbxState) - nres;
+	for (auto resIdx = -(nres); resIdx < 0; resIdx++) {
+		wrap(L, FROM_RBX, resIdx);
+	}
+
+	return nargs;
+}
+
 
 void wrap(lua_State *L, int direction, int idx) {
-
-
-	//new, better ver
 	if (direction == 1) {
 		DWORD rbxAddr = rbxindex2adr(RbxState, idx)[1];
 		TValue *curr;
@@ -62,8 +68,38 @@ void wrap(lua_State *L, int direction, int idx) {
 			lua_setfield(L, -2, "__index");
 			lua_pushcfunction(L, RobloxNewIndex);
 			lua_setfield(L, -2, "__newindex");
-			lua_pushliteral(L, "This metatable is locked!");
+			lua_pushcfunction(L, RobloxCall);
+			lua_setfield(L, -2, "__call");
+			lua_pushcfunction(L, RobloxConcat);
+			lua_setfield(L, -2, "__concat");
+			lua_pushcfunction(L, RobloxUnm);
+			lua_setfield(L, -2, "__unm");
+			lua_pushcfunction(L, RobloxAdd);
+			lua_setfield(L, -2, "__add");
+			lua_pushcfunction(L, RobloxSub);
+			lua_setfield(L, -2, "__sub");
+			lua_pushcfunction(L, RobloxMul);
+			lua_setfield(L, -2, "__mul");
+			lua_pushcfunction(L, RobloxDiv);
+			lua_setfield(L, -2, "__div");
+			lua_pushcfunction(L, RobloxMod);
+			lua_setfield(L, -2, "__mod");
+			lua_pushcfunction(L, RobloxPow);
+			lua_setfield(L, -2, "__pow");
+			lua_pushcfunction(L, RobloxTostring);
+			lua_setfield(L, -2, "__tostring");
+			lua_pushcfunction(L, RobloxMetatable);
 			lua_setfield(L, -2, "__metatable");
+			lua_pushcfunction(L, RobloxEq);
+			lua_setfield(L, -2, "__eq");
+			lua_pushcfunction(L, RobloxLt);
+			lua_setfield(L, -2, "__lt");
+			lua_pushcfunction(L, RobloxLe);
+			lua_setfield(L, -2, "__le");
+			lua_pushcfunction(L, RobloxMode);
+			lua_setfield(L, -2, "__mode");
+			lua_pushcfunction(L, RobloxLen);
+			lua_setfield(L, -2, "__len");
 			lua_setmetatable(L, -2);
 			printf("\r\nLUD, UD or Table");
 			break;
@@ -83,6 +119,12 @@ void wrap(lua_State *L, int direction, int idx) {
 			curr->rbxaddr = rbxAddr;
 			printf("\r\nString");
 			break;
+		case RBXTFUNCTION:
+			lua_pushcfunction(L, functionhandler);
+			curr = index2adr(L, -1);
+			curr->rbxaddr = rbxAddr;
+			printf("\r\nFunction");
+			break;
 		default:
 			lua_pushnil(L);
 			printf("\r\nOther/nil");
@@ -95,6 +137,7 @@ void wrap(lua_State *L, int direction, int idx) {
 
 		if (lua_type(L, idx) == LUA_TSTRING) {
 			rbxpushstring(RbxState, lua_tostring(L, idx));
+			printf("\r\nPushed string");
 		}
 		else if (rbxpushrealobject(RbxState, localAddr)) {
 			switch (lua_type(L, idx))
@@ -113,10 +156,10 @@ void wrap(lua_State *L, int direction, int idx) {
 				rbxpushnumber(RbxState, localAddr->value.n);
 				printf("\r\nPushed number");
 				break;
-			case LUA_TSTRING:
+/*			case LUA_TSTRING:
 				rbxpushstring(RbxState, lua_tostring(L, idx));
-				printf("\r\nPushed string");
-				break;
+				printf("\r\nPushed string"); not needed because of above func because of crap o k 
+				break;*/
 			default:
 				rbxpushnil(RbxState);
 				printf("\r\nPushed nil/other unhandled type!");
@@ -143,12 +186,108 @@ int RobloxGlobalIndex(lua_State *L)
 
 int RobloxIndex(lua_State *L)
 {
-	return wrappedMMs["__index"](L);
+	const char* key = lua_tostring(L, -1);
+
+	if (rbxgetmetatable(RbxState, -1)) {
+		rbxgetfield(RbxState, -1, "__index");
+		rbxpushvalue(RbxState, -3);
+		rbxpushstring(RbxState, key);
+		rbxpcall(RbxState, 2, 1, 0);
+		wrap(L, FROM_RBX, -1);
+		return 1;
+	}
+	else {
+		rbxgetfield(RbxState, -1, key);
+		wrap(L, FROM_RBX, -1);
+		return 0;
+	}
+
+	return 0;
 }
 
 int RobloxNewIndex(lua_State *L)
 {
-	return wrappedMMs["__newindex"](L);
+	return wrappedMM(L, "__newindex");
+}
+
+int RobloxCall(lua_State *L)
+{
+	return wrappedMM(L, "__call");
+}
+
+int RobloxConcat(lua_State *L)
+{
+	return wrappedMM(L, "__concat");
+}
+
+int RobloxUnm(lua_State *L)
+{
+	return wrappedMM(L, "__unm");
+}
+
+int RobloxAdd(lua_State *L)
+{
+	return wrappedMM(L, "__add");
+}
+
+int RobloxSub(lua_State *L)
+{
+	return wrappedMM(L, "__sub");
+}
+
+int RobloxMul(lua_State *L)
+{
+	return wrappedMM(L, "__mul");
+}
+
+int RobloxDiv(lua_State *L)
+{
+	return wrappedMM(L, "__div");
+}
+
+int RobloxMod(lua_State *L)
+{
+	return wrappedMM(L, "__mod");
+}
+
+int RobloxPow(lua_State *L)
+{
+	return wrappedMM(L, "__pow");
+}
+
+int RobloxTostring(lua_State *L)
+{
+	return wrappedMM(L, "__tostring");
+}
+
+int RobloxMetatable(lua_State *L)
+{
+	return wrappedMM(L, "__metatable");
+}
+
+int RobloxEq(lua_State *L)
+{
+	return wrappedMM(L, "__eq");
+}
+
+int RobloxLt(lua_State *L)
+{
+	return wrappedMM(L, "__lt");
+}
+
+int RobloxLe(lua_State *L)
+{
+	return wrappedMM(L, "__le");
+}
+
+int RobloxMode(lua_State *L)
+{
+	return wrappedMM(L, "__mode");
+}
+
+int RobloxLen(lua_State *L)
+{
+	return wrappedMM(L, "__len");
 }
 
 /*int RobloxNewIndex(lua_State *L)
