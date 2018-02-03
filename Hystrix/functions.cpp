@@ -114,7 +114,18 @@ void rbxpushboolean(DWORD L, int b) {
 }
 
 DWORD* rbxindex2adr(DWORD L, int idx) {
-	return (DWORD*)(*(DWORD*)(L + L_top) + 16 * idx);
+	if (idx <= 0) {
+		if (idx <= -10000) {
+			return (DWORD*)(16 * (-10002 - idx) + 8);
+		}
+		else {
+			return (DWORD*)(*(DWORD*)(L + L_top) + 16 * idx);
+		}
+	}
+	else {
+		if ((unsigned int)(16 * idx + *(DWORD*)(L + L_base) - 16) < *(DWORD*)(L + L_top))
+			return (DWORD*)(16 * idx + *(DWORD*)(L + L_base) - 16);
+	}
 }
 
 void rbxpushvalue(DWORD L, int idx) {

@@ -5,24 +5,27 @@
 
 int functionHandler(lua_State *L)
 {
-	int addr = lua_tonumber(L, lua_upvalueindex(1));
+	DWORD *addr = *(DWORD **)lua_touserdata(L, lua_upvalueindex(1));
 
 	int nargs = lua_gettop(L);
 	int nres = rbxgettop(RbxState);
 	
-	rbxpush(RbxState, (r_TValue *)addr);
+	DEBUGPRINT("\n%s", std::to_string((int)addr[1]).c_str());
+	rbxpush(RbxState, (r_TValue *)addr[1]);
 
+	DEBUGPRINT("\n%s", std::to_string(nargs).c_str());
 	for (auto argIdx = 1; argIdx <= nargs; argIdx++) {
 		wrap(L, TO_RBX, argIdx);
 	}
 	
 	rbxpcall(RbxState, nargs, LUA_MULTRET, 0);
-	nres = rbxgettop(RbxState) - nres;
+	nres = (rbxgettop(RbxState) - nres) + 1;
 
 	for (auto resIdx = -(nres); resIdx < 0; resIdx++) {
 		wrap(L, resIdx, FROM_RBX);
 	}
 
+	DEBUGPRINT("\n%s", std::to_string(nres).c_str());
 	return nres;
 }
 
@@ -121,13 +124,15 @@ void wrap(lua_State *L, int direction, int idx) {
 			curr->rbxaddr = rbxAddr;
 			printf("\nString");
 			break;
-		case RBXTFUNCTION:
-			lua_pushnumber(L, (double)rbxindex2adr(RbxState, -1)[1]);
+		case RBXTFUNCTION: {
+			DWORD **ud = (DWORD **)lua_newuserdata(L, sizeof(DWORD *));
+			*ud = rbxindex2adr(RbxState, idx);
 			lua_pushcclosure(L, functionHandler, 1);
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
 			printf("\nFunction");
 			break;
+		}
 		default:
 			lua_pushnil(L);
 			printf("\nOther/nil");
@@ -159,18 +164,18 @@ void wrap(lua_State *L, int direction, int idx) {
 				rbxpushnumber(RbxState, localAddr->value.n);
 				printf("\nPushed number");
 				break;
-/*			case LUA_TSTRING:
+			case LUA_TSTRING:
 				rbxpushstring(RbxState, lua_tostring(L, idx));
-				printf("\r\nPushed string"); not needed because of above func because of crap o k 
-				break;*/
+				printf("\nPushed string");
+				break;
 			default:
 				rbxpushnil(RbxState);
-				printf("\r\nPushed nil/other unhandled type!");
+				printf("\nPushed nil/other unhandled type!");
 				break;
 			}
 		}
 		else {
-			printf("\r\nPushed real object");
+			printf("\nPushed real object");
 		}
 
 	}
@@ -184,8 +189,6 @@ int RobloxGlobalIndex(lua_State *L)
 	wrap(L, FROM_RBX, -1);
 	return 1;
 }
-
-
 
 int RobloxIndex(lua_State *L)
 {
