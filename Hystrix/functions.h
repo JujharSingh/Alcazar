@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <emmintrin.h>
+#include <string> 
 
 #include "addresses.h"
 
@@ -10,28 +11,33 @@ extern "C" {
 #include "lua-5.1.5/lobject.h"
 #include "lua-5.1.5/lauxlib.h"
 #include "lua-5.1.5/lualib.h"
-}
-
-#include <string>  
+} 
 
 #define rbxgetglobal(L,s) rbxgetfield(L, -10002, s)
 #define rbxsetglobal(L,s) rbxsetfield(L, -10002, s)
 #define rbxpop(L,n)  rbxsettop(L, -(n)-1)
 #define rbxtostring(L,i)       rbxtolstring(L, (i), NULL)
 
-#define RBXTNONE               (-1) //yes
+#define RBXTNONE               (-1)
+#define RBXTNIL			0
+#define RBXTBOOLEAN		3
+#define RBXTLIGHTUSERDATA	1
+#define RBXTNUMBER		2 
+#define RBXTSTRING		4 
+#define RBXTTABLE		7 
+#define RBXTFUNCTION		6 
+#define RBXTUSERDATA		8 
+#define RBXTTHREAD		5 
+#define RBXTPROTO		9
+#define RBXTUPVAL		1
 
-#define RBXTNIL                0 //yes
-#define RBXTBOOLEAN            3 //yes
-#define RBXTLIGHTUSERDATA      1 //yes
-#define RBXTNUMBER             2 //yes
-#define RBXTSTRING             4 //yes
-#define RBXTTABLE              7 //yes
-#define RBXTFUNCTION           6 //yes
-#define RBXTUSERDATA           8 //yes
-#define RBXTTHREAD             5 //yes
-#define RBXTPROTO			   9 //yes
-#define RBXTUPVAL			   10 //yes
+// #define _DEBUG
+
+#ifdef _DEBUG
+#define DEBUGPRINT(...) printf(__VA_ARGS__)
+#else
+#define DEBUGPRINT
+#endif
 
 DWORD unprotect(DWORD addr);
 
