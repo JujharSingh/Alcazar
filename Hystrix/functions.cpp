@@ -143,7 +143,7 @@ int rbxtype(DWORD L, int idx) {
 }
 
 int hysprint(lua_State* L) {
-	printf("\r\n %s", luaL_checkstring(L, -1));
+	printf("\r\n %s", lua_tostring(L, -1));
 	return 0;
 }
 
@@ -153,7 +153,9 @@ void hystrix_setup(lua_State *L){
 	int *flag = (int*)offset(identity);
 	*flag = 6;
 
-	lua_register(L, "HystrixPrint", hysprint);
+#ifdef _DEBUG
+	lua_register(L, "DebugPrint", hysprint);
+#endif // _DEBUG
 
 	lua_pushvalue(L, LUA_GLOBALSINDEX);
 	lua_newtable(L);
