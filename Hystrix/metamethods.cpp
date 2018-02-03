@@ -30,27 +30,6 @@ int wrappedMM(lua_State *L, const char *mm)
 	}
 }
 
-int functionhandler(lua_State *L)
-{
-	auto nargs = lua_gettop(L);
-
-	auto nres = rbxgettop(RbxState) - 1;
-		
-	for (auto argIdx = 1; argIdx <= nargs; argIdx++) {
-		wrap(L, TO_RBX, argIdx);
-	}
-
-	rbxpcall(RbxState, nargs, LUA_MULTRET, 0);
-
-	nres = rbxgettop(RbxState) - nres;
-	for (auto resIdx = -(nres); resIdx < 0; resIdx++) {
-		wrap(L, FROM_RBX, resIdx);
-	}
-
-	return nargs;
-}
-
-
 void wrap(lua_State *L, int direction, int idx) {
 	if (direction == 1) {
 		DWORD rbxAddr = rbxindex2adr(RbxState, idx)[1];
@@ -120,7 +99,7 @@ void wrap(lua_State *L, int direction, int idx) {
 			printf("\r\nString");
 			break;
 		case RBXTFUNCTION:
-			lua_pushcfunction(L, functionhandler);
+			lua_pushnil(L);
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
 			printf("\r\nFunction");
