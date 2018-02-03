@@ -114,18 +114,7 @@ void rbxpushboolean(DWORD L, int b) {
 }
 
 DWORD* rbxindex2adr(DWORD L, int idx) {
-	if (idx <= 0) {
-		if (idx <= -10000) {
-			return (DWORD*)(16 * (-10002 - idx) + 8);
-		}
-		else {
-			return (DWORD*)(*(DWORD*)(L + L_top) + 16 * idx);
-		}
-	}
-	else {
-		if ((unsigned int)(16 * idx + *(DWORD*)(L + L_base) - 16) < *(DWORD*)(L + L_top))
-			return (DWORD*)(16 * idx + *(DWORD*)(L + L_base) - 16);
-	}
+	return (DWORD*)(*(DWORD*)(L + L_top) + 16 * idx);
 }
 
 void rbxpushvalue(DWORD L, int idx) {
@@ -264,6 +253,16 @@ int rbxpushrealobject(int L, TValue *o) {
 	r_TValue *gheet = (r_TValue *)o->rbxaddr;
 	r_TValue *v2 = (r_TValue *)(L + L_top);
 	v2 = gheet;
+	*(DWORD *)(L + L_top) += sizeof(r_TValue); //should be 16 lol
+	return 0;
+}
+
+int rbxpush(int L, r_TValue *o) { //added for purposes of function handling, think of another way to do this, maybe a union
+	if (o == NULL) {
+		return 1;
+	}
+	r_TValue *v2 = (r_TValue *)(L + L_top);
+	v2 = o;
 	*(DWORD *)(L + L_top) += sizeof(r_TValue); //should be 16 lol
 	return 0;
 }

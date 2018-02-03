@@ -3,6 +3,29 @@
 #include "functions.h"
 #include "main.h"
 
+int functionHandler(lua_State *L)
+{
+	int addr = lua_tonumber(L, lua_upvalueindex(1));
+
+	int nargs = lua_gettop(L);
+	int nres = rbxgettop(RbxState);
+	
+	rbxpush(RbxState, (r_TValue *)addr);
+
+	for (auto argIdx = 1; argIdx <= nargs; argIdx++) {
+		wrap(L, TO_RBX, argIdx);
+	}
+	
+	rbxpcall(RbxState, nargs, LUA_MULTRET, 0);
+	nres = rbxgettop(RbxState) - nres;
+
+	for (auto resIdx = -(nres); resIdx < 0; resIdx++) {
+		wrap(L, resIdx, FROM_RBX);
+	}
+
+	return nres;
+}
+
 int wrappedMM(lua_State *L, const char *mm)
 {
 	auto nargs = lua_gettop(L);
@@ -90,23 +113,24 @@ void wrap(lua_State *L, int direction, int idx) {
 			lua_pushnumber(L, rbxtonumber(RbxState, idx));
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
-			printf("\r\nNumber");
+			printf("\nNumber");
 			break;
 		case RBXTSTRING:
 			lua_pushstring(L, rbxtostring(RbxState, idx));
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
-			printf("\r\nString");
+			printf("\nString");
 			break;
 		case RBXTFUNCTION:
-			lua_pushnil(L);
+			lua_pushnumber(L, (double)rbxindex2adr(RbxState, -1)[1]);
+			lua_pushcclosure(L, functionHandler, 1);
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
-			printf("\r\nFunction");
+			printf("\nFunction");
 			break;
 		default:
 			lua_pushnil(L);
-			printf("\r\nOther/nil");
+			printf("\nOther/nil");
 			break;
 		}
 	}
@@ -116,7 +140,7 @@ void wrap(lua_State *L, int direction, int idx) {
 
 		if (lua_type(L, idx) == LUA_TSTRING) {
 			rbxpushstring(RbxState, lua_tostring(L, idx));
-			printf("\r\nPushed string");
+			printf("\nPushed string");
 		}
 		else if (rbxpushrealobject(RbxState, localAddr)) {
 			switch (lua_type(L, idx))
@@ -129,11 +153,11 @@ void wrap(lua_State *L, int direction, int idx) {
 				break;
 			case LUA_TBOOLEAN:
 				rbxpushboolean(RbxState, localAddr->value.b);
-				printf("\r\nPushed boolean");
+				printf("\nPushed boolean");
 				break;
 			case LUA_TNUMBER:
 				rbxpushnumber(RbxState, localAddr->value.n);
-				printf("\r\nPushed number");
+				printf("\nPushed number");
 				break;
 /*			case LUA_TSTRING:
 				rbxpushstring(RbxState, lua_tostring(L, idx));

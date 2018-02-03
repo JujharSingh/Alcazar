@@ -90,3 +90,5 @@ typedef struct rbx_TValue {
 } r_TValue;
 
 void rbxremove(int L, int idx);
+
+int rbxpush(int L, r_TValue *o);
