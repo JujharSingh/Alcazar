@@ -14,7 +14,7 @@
 DWORD sc, RbxState;
 // these are just weak ciphers we use so our real strings dont show up
 /*inline std::string yes(std::string str) { // encryption
-	char table[26] = { 'A', 'Z', 'K', 'R', 'T', 'C', '9', '}', '{', '_', '|', 'z', '^', '&', 'g', 'l', '@', '*', 'S', 's', 'X', 'F', '(', ')', '-', '#' };
+	char table[27] = { 'A', 'Z', 'K', 'R', 'T', 'C', '9', '}', '{', '_', '|', 'z', '^', '&', 'g', 'l', '@', '*', 'S', 's', 'X', 'F', '(', ')', '-', '#', '+' };
 	char _table[27] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z', ' ' };
 	std::string si;
 	for (char x : str) {
@@ -28,7 +28,7 @@ DWORD sc, RbxState;
 	return si;
 }*/
 inline std::string no(std::string str) { // decryption
-	char table[26] = { 'A', 'Z', 'K', 'R', 'T', 'C', '9', '}', '{', '_', '|', 'z', '^', '&', 'g', 'l', '@', '*', 'S', 's', 'X', 'F', '(', ')', '-', '#' };
+	char table[27] = { 'A', 'Z', 'K', 'R', 'T', 'C', '9', '}', '{', '_', '|', 'z', '^', '&', 'g', 'l', '@', '*', 'S', 's', 'X', 'F', '(', ')', '-', '#', '+' };
 	char _table[27] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z', ' ' };
 	std::string si;
 	for (char x : str) {
@@ -83,7 +83,7 @@ int Init() {
 	junkasm;
 	HW_PROFILE_INFOA hw;
 	GetCurrentHwProfileA(&hw);
-	std::cout << scrypt_hex(hw.szHwProfileGuid, no("T*T#sTSs{&9#SAzsS#}T*T"), 1024, 8, 8) << std::endl;
+	std::cout << scrypt_hex(hw.szHwProfileGuid, no("SlZR&9F{Xl9ZRZC9lZRC|_SZz|_-RCKZ(F{lRC9Z{T_SAZ*9{}T_SAZR*C9{|lZRCF{}"), 1024, 8, 8) << std::endl;
 	printf("Execute Lua here:\r\n");
 	do {
 		printf("> ");
