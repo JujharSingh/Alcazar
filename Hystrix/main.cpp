@@ -28,7 +28,7 @@ int Init() {
 	freopen("conout$", "w", stdout);
 	freopen("conout$", "w", stderr);
 	SetConsoleTitle(L"Alcazar");
-
+	//lul
 	printf("Execute Lua here:\r\n");
 	do {
 		printf("> ");
