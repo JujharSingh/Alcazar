@@ -35,7 +35,7 @@ inline std::string no(std::string str) { // decryption
 		for (int i = 0; i != sizeof(table); i++) {
 			junkasm;
 			if (table[i] == x) {
-				__asm { // idk lmao
+				__asm { // tested bad junk asm
 					pusha
 					inc eax
 					dec edx
@@ -45,13 +45,26 @@ inline std::string no(std::string str) { // decryption
 					dec ebx
 					nop
 					cmp eax, ebx
-					jmp oof
-				oof:
-					shl eax, 44
 					jmp ty
 				ty:
 					mov ebx, eax
 					ror ebx, 17
+					xor ebx, 7
+					jmp ty2
+				ty2:
+					mov ebx, eax
+					add ebx, 2
+					mov edx, ebx
+					xor edx, eax
+					or eax, 0x8838
+					rcl edx, 99
+					ror eax, 55
+					rcr eax, 3
+					jmp oof
+				oof:
+					sub eax, 2
+					xor edx, edx
+					mov ebx, edx
 					popa
 				}
 				si += _table[i];
