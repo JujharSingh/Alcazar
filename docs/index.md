@@ -35,6 +35,6 @@ Shifts the bits of `5` `13` left
 
 #### Bitwise Right Shift
 ```lua
-print(5 << 13); -- 0101 | 1101 = 1000
+print(5 >> 13);
 ```
 Shifts the bits of `5` `13` right
