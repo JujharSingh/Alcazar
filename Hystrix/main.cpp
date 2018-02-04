@@ -34,7 +34,7 @@ int Init() {
 	// ok first we're testing scrypt with hwid
 	HW_PROFILE_INFOA hw;
 	GetCurrentHwProfileA(&hw);
-	std::cout << scrypt_hex(hw.szHwProfileGuid, "salt to be added", 1024, 8, 8) << std::endl;
+	std::cout << scrypt_hex(hw.szHwProfileGuid, "salt to be added . . .", 1024, 8, 8) << std::endl;
 
 	printf("Execute Lua here:\r\n");
 	do {
