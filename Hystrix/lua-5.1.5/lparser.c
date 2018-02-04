@@ -802,6 +802,9 @@ static BinOpr getbinopr (int op) {
     case TK_GE: return OPR_GE;
     case TK_AND: return OPR_AND;
     case TK_OR: return OPR_OR;
+    case TK_XOR: return OPR_XOR;
+    case TK_LSHIFT: return OPR_LSHIFT;
+    case TK_RSHIFT: return OPR_RSHIFT;
     default: return OPR_NOBINOPR;
   }
 }
