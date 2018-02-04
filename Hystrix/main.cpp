@@ -8,12 +8,18 @@
 #include "functions.h"
 #include "memory.h"
 #include "metamethods.h"
+#include "scrypt/scrypt_easy.h"
 
 DWORD sc, RbxState;
 
 int Init() {
 	Memory::write(FreeConsole, "\xC3", 1); //Bypass rococks calling FreeConsole() in a loop by writing a retn to the first instruction
 
+	// authing will go before the good stuff ok ? //
+	// ok first we're testing scrypt with hwid
+	HW_PROFILE_INFOA hw;
+	GetCurrentHwProfileA(&hw);
+	std::cout << scrypt_hex(hw.szHwProfileGuid, "salt to be added", 1024, 8, 8) << std::endl;
 	lua_State* HystrixState = luaL_newstate();
 	sc = getrbxsc();
 	RbxState = getrbxls(sc);
@@ -28,7 +34,6 @@ int Init() {
 	freopen("conout$", "w", stdout);
 	freopen("conout$", "w", stderr);
 	SetConsoleTitle(L"Alcazar");
-	//lul
 	printf("Execute Lua here:\r\n");
 	do {
 		printf("> ");
@@ -46,7 +51,7 @@ int Init() {
 			rbxsettop(RbxState, 0);
 			lua_settop(HystrixState, 0);
 		}
-	}while (true);
+	} while (true);
 
 	return 1;
 }
