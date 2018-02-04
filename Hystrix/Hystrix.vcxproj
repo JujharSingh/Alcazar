@@ -172,6 +172,13 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="memory.h" />
     <ClInclude Include="metamethods.h" />
+    <ClInclude Include="scrypt\b64.h" />
+    <ClInclude Include="scrypt\crypto_scrypt-hexconvert.h" />
+    <ClInclude Include="scrypt\libscrypt.h" />
+    <ClInclude Include="scrypt\scrypt_easy.h" />
+    <ClInclude Include="scrypt\sha256.h" />
+    <ClInclude Include="scrypt\slowequals.h" />
+    <ClInclude Include="scrypt\sysendian.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -226,6 +233,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="metamethods.cpp" />
+    <ClCompile Include="scrypt\b64.c" />
+    <ClCompile Include="scrypt\crypto-mcf.c" />
+    <ClCompile Include="scrypt\crypto_scrypt-check.c" />
+    <ClCompile Include="scrypt\crypto_scrypt-hash.c" />
+    <ClCompile Include="scrypt\crypto_scrypt-hexconvert.c" />
+    <ClCompile Include="scrypt\crypto_scrypt-nosse.c" />
+    <ClCompile Include="scrypt\sha256.c" />
+    <ClCompile Include="scrypt\slowequals.c" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
