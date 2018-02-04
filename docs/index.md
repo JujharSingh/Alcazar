@@ -38,3 +38,12 @@ Shifts the bits of `5` `13` left
 print(5 >> 13);
 ```
 Shifts the bits of `5` `13` right
+
+## Custom Functions
+
+> setmarked(object obj, bool marked)
+Sets whether the object is marked for garbage collection
+> getmarked(object obj)
+Gets whether the object is marked for garbage collection
+> setcollectable(object obj, bool collectable)
+Sets whether the object will considered for garbage collection
