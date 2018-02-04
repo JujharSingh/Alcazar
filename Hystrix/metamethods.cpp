@@ -165,7 +165,7 @@ void wrap(lua_State *L, int direction, int idx) {
 				printf("\nPushed number");
 				break;
 			case LUA_TSTRING:
-				rbxpushstring(RbxState, lua_tostring(L, idx));
+				rbxpushstring(RbxState, (const char*)((TString*)localAddr->value.gc + 1));
 				printf("\nPushed string");
 				break;
 			default:
@@ -175,7 +175,7 @@ void wrap(lua_State *L, int direction, int idx) {
 			}
 		}
 		else {
-			printf("\nPushed real object");
+			printf("\nPushed real object with type '%s'", lua_typename(L, localAddr->tt));
 		}
 
 	}

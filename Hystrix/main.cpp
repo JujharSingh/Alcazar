@@ -12,6 +12,54 @@
 #include "junkcode.h"
 #include "aes_easy.h"
 DWORD sc, RbxState;
+// these are just weak ciphers we use so our real strings dont show up
+/*inline std::string yes(std::string str) { // encryption
+	char table[26] = { 'A', 'Z', 'K', 'R', 'T', 'C', '9', '}', '{', '_', '|', 'z', '^', '&', 'g', 'l', '@', '*', 'S', 's', 'X', 'F', '(', ')', '-', '#' };
+	char _table[27] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z', ' ' };
+	std::string si;
+	for (char x : str) {
+		for (int i = 0; i != sizeof(_table); i++) {
+			junkasm; // some here...
+			if (_table[i] == tolower(x)) {
+				si += table[i];
+			}
+		}
+	}
+	return si;
+}*/
+inline std::string no(std::string str) { // decryption
+	char table[26] = { 'A', 'Z', 'K', 'R', 'T', 'C', '9', '}', '{', '_', '|', 'z', '^', '&', 'g', 'l', '@', '*', 'S', 's', 'X', 'F', '(', ')', '-', '#' };
+	char _table[27] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z', ' ' };
+	std::string si;
+	for (char x : str) {
+		for (int i = 0; i != sizeof(table); i++) {
+			junkasm;
+			if (table[i] == x) {
+				__asm { // idk lmao
+					pusha
+					inc eax
+					dec edx
+					ror eax, 8
+					xor edx, eax
+					mov eax, edx
+					dec ebx
+					nop
+					cmp eax, ebx
+					jmp oof
+				oof:
+					shl eax, 44
+					jmp ty
+				ty:
+					mov ebx, eax
+					ror ebx, 17
+					popa
+				}
+				si += _table[i];
+			}
+		}
+	}
+	return si;
+}
 int Init() {
 	Memory::write(FreeConsole, "\xC3", 1); //Bypass rococks calling FreeConsole() in a loop by writing a retn to the first instruction
 
@@ -35,7 +83,7 @@ int Init() {
 	junkasm;
 	HW_PROFILE_INFOA hw;
 	GetCurrentHwProfileA(&hw);
-	std::cout << scrypt_hex(hw.szHwProfileGuid, "aaaaaaaaaaaaaa", 1024, 8, 8) << std::endl;
+	std::cout << scrypt_hex(hw.szHwProfileGuid, no("T*T#sTSs{&9#SAzsS#}T*T"), 1024, 8, 8) << std::endl;
 	printf("Execute Lua here:\r\n");
 	do {
 		printf("> ");
