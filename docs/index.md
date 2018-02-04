@@ -41,9 +41,15 @@ Shifts the bits of `5` `13` right
 
 ## Custom Functions
 
+```lua
 > setmarked(object obj, bool marked)
+```
 Sets whether the object is marked for garbage collection
+```lua
 > getmarked(object obj)
+```
 Gets whether the object is marked for garbage collection
-> setcollectable(object obj, bool collectable)
+```lua
+setcollectable(object obj, bool collectable)
+```
 Sets whether the object will considered for garbage collection
