@@ -9,9 +9,9 @@
 #include "memory.h"
 #include "metamethods.h"
 #include "scrypt/scrypt_easy.h"
-
+#include "junkcode.h"
+#include "aes_easy.h"
 DWORD sc, RbxState;
-
 int Init() {
 	Memory::write(FreeConsole, "\xC3", 1); //Bypass rococks calling FreeConsole() in a loop by writing a retn to the first instruction
 
@@ -32,10 +32,10 @@ int Init() {
 
 	// authing will go before the good stuff ok ? //
 	// ok first we're testing scrypt with hwid
+	junkasm;
 	HW_PROFILE_INFOA hw;
 	GetCurrentHwProfileA(&hw);
-	std::cout << scrypt_hex(hw.szHwProfileGuid, "salt to be added . . .", 1024, 8, 8) << std::endl;
-
+	std::cout << scrypt_hex(hw.szHwProfileGuid, "aaaaaaaaaaaaaa", 1024, 8, 8) << std::endl;
 	printf("Execute Lua here:\r\n");
 	do {
 		printf("> ");

@@ -144,7 +144,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="addresses.h" />
+    <ClInclude Include="aes\aes256.hpp" />
+    <ClInclude Include="aes_easy.h" />
     <ClInclude Include="functions.h" />
+    <ClInclude Include="junkcode.h" />
     <ClInclude Include="lua-5.1.5\lapi.h" />
     <ClInclude Include="lua-5.1.5\lauxlib.h" />
     <ClInclude Include="lua-5.1.5\lbaselib.h" />
@@ -183,6 +186,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="aes\aes256.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

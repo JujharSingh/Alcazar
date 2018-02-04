@@ -16,6 +16,9 @@
     <Filter Include="scrypt">
       <UniqueIdentifier>{868dea51-887e-46c1-b333-a0bfdb645c87}</UniqueIdentifier>
     </Filter>
+    <Filter Include="aes">
+      <UniqueIdentifier>{1eb8bf5e-a1e0-4d48-b6ea-e023a3d817a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -131,6 +134,15 @@
     </ClInclude>
     <ClInclude Include="scrypt\sysendian.h">
       <Filter>scrypt</Filter>
+    </ClInclude>
+    <ClInclude Include="junkcode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aes\aes256.hpp">
+      <Filter>aes</Filter>
+    </ClInclude>
+    <ClInclude Include="aes_easy.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +283,9 @@
     </ClCompile>
     <ClCompile Include="scrypt\slowequals.c">
       <Filter>scrypt</Filter>
+    </ClCompile>
+    <ClCompile Include="aes\aes256.cpp">
+      <Filter>aes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
