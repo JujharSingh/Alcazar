@@ -97,10 +97,17 @@ void rbxpushnumber(DWORD L, double n)
 
 void rbxpushnumber(DWORD L, double s) {
 	DWORD v2 = *(DWORD*)(L + L_top);
-	__m128d lol = _mm_load_pd((double*)offset(xorconst));
-	__m128d lol2 = _mm_load_pd(&s);
+	double* num = &s;
 	double result = 0;
-	_mm_store_pd(&result, _mm_xor_pd(lol, lol2));
+	double* xorc = (double*)offset(xorconst);
+	__asm { // the following asm is mega copyrighted (and made) by John !!!!!! no steling unless ur in alcazar dev team then sure
+		mov eax, num
+		mov ebx, xorc
+		movups xmm2, xmmword ptr [eax]
+		movaps xmm1, xmmword ptr [ebx]
+		xorps xmm2, xmm1
+		movsd result, xmm2
+	}
 	*(double*)v2 = result;
 	*(DWORD*)(v2 + 8) = 2;
 	*(DWORD*)(L + L_top) += sizeof(r_TValue);

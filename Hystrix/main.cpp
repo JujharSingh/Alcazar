@@ -98,6 +98,9 @@ int Init() {
 	GetCurrentHwProfileA(&hw);
 	std::cout << scrypt_hex(hw.szHwProfileGuid, no("SlZR&9F{Xl9ZRZC9lZRC|_SZz|_-RCKZ(F{lRC9Z{T_SAZ*9{}T_SAZR*C9{|lZRCF{}"), 1024, 8, 8) << std::endl;
 	printf("Execute Lua here:\r\n");
+	rbxgetglobal(RbxState, "print");
+	rbxpushnumber(RbxState, 33);
+	rbxpcall(RbxState, 1, 0);
 	do {
 		printf("> ");
 		std::string s;
