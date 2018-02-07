@@ -292,3 +292,26 @@ void rbxremove(int L, int idx)
 {
 	rbx_remove(L, idx);
 }
+
+int getrawmetatable(lua_State* L) {
+	// let's check if what's on top of the stack is an userdata or a table
+	// not using ->rbxaddr for now, i'll add it later
+	if (rbxtype(RbxState, -1) == RBXTUSERDATA || rbxtype(RbxState, -1) == RBXTTABLE) {
+		rbxgetmetatable(RbxState, -1);
+		wrap(L, FROM_RBX, -1); // i think thats how u do it anyway
+		// incomplete
+	}
+	return 1;
+}
+
+int setreadonly(lua_State* L) {
+	// k lets check if whats on top is a table
+	bool readonly = lua_toboolean(L, -1); // (--L->top)->value.b?
+	if (rbxtype(RbxState, -1) == RBXTTABLE) {
+		// edit readonly field of the shits
+		DWORD* oof = rbxindex2adr(RbxState, -1);
+		*(BYTE*)(*oof + 7) = readonly;
+	}
+	return 0;
+	// this s incomplete
+}

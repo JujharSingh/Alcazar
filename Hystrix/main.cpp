@@ -82,6 +82,12 @@ int Init() {
 
 	hystrix_setup(HystrixState);
 
+	lua_pushcfunction(HystrixState, getrawmetatable);
+	lua_setfield(HystrixState, -10002, "getrawmetatable");
+
+	lua_pushcfunction(HystrixState, setreadonly);
+	lua_setfield(HystrixState, -10002, "setreadonly");
+
 	lua_settop(HystrixState, 0);
 
 	AllocConsole();

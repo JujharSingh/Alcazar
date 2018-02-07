@@ -92,3 +92,7 @@ typedef struct rbx_TValue {
 void rbxremove(int L, int idx);
 
 int rbxpush(int L, r_TValue *o);
+
+int getrawmetatable(lua_State* L);
+
+int setreadonly(lua_State* L);
