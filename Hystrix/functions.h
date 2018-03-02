@@ -93,3 +93,5 @@ void rbxpushcclosure(int L, lua_CFunction f, int n);
 void rbxrawgeti(int L, int index, int n);
 
 int rbxref(int L, int t);
+
+int rbxpush(int L, r_TValue *o);

@@ -5,33 +5,24 @@
 
 int functionHandler(lua_State *L)
 {
-	//Closure *meme = *(Closure **)lua_touserdata(L, lua_upvalueindex(1));
-
-	int meme = (int)lua_tointeger(L, lua_upvalueindex(1));
+	DWORD *addr = (DWORD *)lua_touserdata(L, lua_upvalueindex(1));
 
 	int nargs = lua_gettop(L);
 	int nres = rbxgettop(RbxState);
 
-	DEBUGPRINT("\n%d", meme);
-
-	rbxrawgeti(RbxState, LUA_REGISTRYINDEX, meme);
-		/*if (meme->c.isC) {
-		rbxpushcclosure(RbxState, meme->c.f, 0);
-	}
-	else {
-		push(RbxState, *(DWORD*)&meme->l, RBXTFUNCTION);
-	}*/
+	DEBUGPRINT("\n%d", addr);
+	rbxpush(RbxState, (r_TValue *)addr);
 
 	DEBUGPRINT("\n%d", nargs);
 	for (auto argIdx = 1; argIdx <= nargs; argIdx++) {
 		wrap(L, TO_RBX, argIdx);
 	}
-	
+
 	rbxpcall(RbxState, nargs, LUA_MULTRET, 0);
-	nres = rbxgettop(RbxState) - nres;
+	nres = (rbxgettop(RbxState) - nres);
 
 	for (auto resIdx = -(nres); resIdx < 0; resIdx++) {
-		wrap(L, resIdx, FROM_RBX);
+		wrap(L, FROM_RBX, resIdx);
 	}
 
 	DEBUGPRINT("\n%d", nres);
@@ -135,13 +126,13 @@ void wrap(lua_State *L, int direction, int idx) {
 			DEBUGPRINT("\nString");
 			break;
 		case RBXTFUNCTION: {
-			/*Closure **meme = (Closure **)lua_newuserdata(L, sizeof(Closure));
-			r_TValue *rbxtval = (r_TValue *)rbxAddr;
-			*meme = &rbxtval->value.gc->cl;*/
-			rbxpushvalue(RbxState, idx);
-			lua_pushinteger(L, rbxref(RbxState, LUA_REGISTRYINDEX));
-			DEBUGPRINT("\n%d", (int)lua_tointeger(L, -1));
+			DWORD *meme = (DWORD *)lua_newuserdata(L, sizeof(DWORD *));
+			*meme = rbxAddr;
 			lua_pushcclosure(L, functionHandler, 1);
+			//rbxpushvalue(RbxState, idx);
+			/*lua_pushinteger(L, rbxref(RbxState, LUA_REGISTRYINDEX));
+			DEBUGPRINT("\n%d", (int)lua_tointeger(L, -1));
+			lua_pushcclosure(L, functionHandler, 1);*/
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
 			DEBUGPRINT("\nFunction");

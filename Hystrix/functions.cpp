@@ -285,7 +285,7 @@ int rbxpushrealobject(int L, TValue *o) {
 	return 0;
 }
 
-/*int rbxpush(int L, r_TValue *o) { //added for purposes of function handling, think of another way to do this, maybe a union
+int rbxpush(int L, r_TValue *o) { //added for purposes of function handling, think of another way to do this, maybe a union or just plain function overloading
 	if (o == NULL) {
 		return 1;
 	}
@@ -295,7 +295,7 @@ int rbxpushrealobject(int L, TValue *o) {
 	return 0;
 }
 
-typedef void(*rluaremove) (int L, int idx);
+/*typedef void(*rluaremove) (int L, int idx);
 rluaremove rbx_remove = (rluaremove)unprotect(offset(Remove));
 
 void rbxremove(int L, int idx)
