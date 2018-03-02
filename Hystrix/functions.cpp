@@ -15,50 +15,89 @@ extern "C" { //ya its c tell the linker
 
 DWORD unprotect(DWORD addr)
 {
-	BYTE* tAddr = (BYTE *)addr;
+	BYTE* tAddr = (BYTE*)addr;
 
-	do {
-		tAddr += 0x10;
+	/* Calcualte the size of the function
+	In theory this will run until it hits the next
+	functions prolog. It assumes all calls are aligned to
+	16 bytes. (grazie katie)
+	*/
+	do
+	{
+		tAddr += 16;
 	} while (!(tAddr[0] == 0x55 && tAddr[1] == 0x8B && tAddr[2] == 0xEC));
 
 	DWORD funcSz = tAddr - (BYTE*)addr;
 
+	/* Allocate memory for the new function */
 	PVOID nFunc = VirtualAlloc(NULL, funcSz, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (nFunc == NULL)
 		return addr;
 
+	/* Copy the function to the newly allocated memory */
 	memcpy(nFunc, (void*)addr, funcSz);
 
-	DWORD pos = (DWORD)nFunc;
+	BYTE* pos = (BYTE*)nFunc;
 	BOOL valid = false;
-	do {
-		if (*(BYTE*)pos == 0x72 && *(BYTE*)(pos + 0x2) == 0xA1 && (*(BYTE*)(pos + 0x7)) == 0x8B) {
-			memcpy((void*)pos, "\xEB", 1);
+	do
+	{
+		/* Check for the return check with the sig:
+        72 ?? A1 ?? ?? ?? ?? 8B
+        72 ?? 8B ?? ?? ?? ?? 00
+		If the sig matches replace the the jb with a jmp.
+		*/
+		if (pos[0] == 0x72 && (pos[2] == 0xA1 || pos[2] == 0x8B) && (pos[7] == 0x8B || pos[7] == 0x00)) {
+			*(BYTE*)pos = 0xEB;
 
-			DWORD cNFunc = (DWORD)nFunc;
-			do {
-				if (*(BYTE*)cNFunc == 0xE8)
+			DWORD cByte = (DWORD)nFunc;
+			do
+			{
+				/* Check if the current byte is a call if it is,
+				calculate the new relative call(s).
+				*(->E8 + 1) = originalFunction - nextInstruction
+
+				oFuncPos - Position of call in original function
+				= originalFunction + (->E8 - newFunction)
+
+				oFuncAddr - Original call location
+				= oFuncPos + rel32Offset + sizeof(call)
+
+				relativeAddr - New relative address
+				= oFuncAddr - ->E8 - sizeof(call)
+
+				Since we are not using a disassembler we assume
+				that if we hit a E8 byte which is properly aligned
+				it is a relative call.
+				For a small amount of compensation I skip location
+				of the call, since it is possible to have the byte
+				E8 inside of it.
+				*/
+				if (*(BYTE*)cByte == 0xE8)
 				{
-					DWORD tFunc = addr + (cNFunc - (DWORD)nFunc);
-					DWORD oFunc = (tFunc + *(DWORD*)(tFunc + 1)) + 5;
+					DWORD oFuncPos = addr + (cByte - (DWORD)nFunc);
+					DWORD oFuncAddr = (oFuncPos + *(DWORD*)(oFuncPos + 1)) + 5;
 
-					if (oFunc % 16 == 0)
+					if (oFuncAddr % 16 == 0)
 					{
-						DWORD realCAddr = oFunc - cNFunc - 5;
-						*(DWORD*)(cNFunc + 1) = realCAddr;
+						DWORD relativeAddr = oFuncAddr - cByte - 5;
+						*(DWORD*)(cByte + 1) = relativeAddr;
+						
+						/* Don't check rel32 */
+						cByte += 4;
 					}
-					cNFunc += 5;
 				}
-				else
-					cNFunc += 1;
-			} while (cNFunc - (DWORD)nFunc < funcSz);
+
+				cByte += 1;
+			} while (cByte - (DWORD)nFunc < funcSz);
 
 			valid = true;
 		}
 		pos += 1;
-	} while (pos < (DWORD)nFunc + funcSz);
+	} while ((DWORD)pos < (DWORD)nFunc + funcSz);
 
-	if (!valid) {
+	/* This function has no return check, let's not waste memory */
+	if (!valid)
+	{
 		VirtualFree(nFunc, funcSz, MEM_RELEASE);
 		return addr;
 	}
@@ -87,24 +126,24 @@ void rbxpushnil(DWORD L) {
 	*(DWORD *)(L + L_top) += sizeof(r_TValue);
 }
 
-/*typedef int(*rluapushnumber) (int L, double n);
-rluapushnumber rbx_pushnumber = (rluapushnumber)unprotect(offset(pushnumber));
-
-void rbxpushnumber(DWORD L, double n)
-{
-	rbx_pushnumber(L, n);
-}*/
-
 void rbxpushnumber(DWORD L, double s) {
 	DWORD v2 = *(DWORD*)(L + L_top);
-	__m128d lol = _mm_load_pd((double*)offset(xorconst));
-	__m128d lol2 = _mm_load_pd(&s);
+	double* num = &s;
 	double result = 0;
-	_mm_store_pd(&result, _mm_xor_pd(lol, lol2));
+	double* xorc = (double*)offset(xorconst);
+	__asm { // the following asm code is mega copyrighted (and made by) John. no steling pls unless ur part of alcazar dev team then go ahead lol. very copyrighted by John 100% credited
+		mov eax, num
+		mov ebx, xorc
+		movups xmm2, xmmword ptr[eax]
+		movaps xmm1, xmmword ptr[ebx]
+		xorps xmm2, xmm1
+		movsd result, xmm2
+	}
 	*(double*)v2 = result;
 	*(DWORD*)(v2 + 8) = 2;
 	*(DWORD*)(L + L_top) += sizeof(r_TValue);
 }
+
 
 void rbxpushboolean(DWORD L, int b) {
 	int v2 = *(DWORD *)(L + L_top);
@@ -147,7 +186,6 @@ int hysprint(lua_State* L) {
 	return 0;
 }
 
-//make datamodelon stack then get global in it
 void hystrix_setup(lua_State *L){
 	
 	int *flag = (int*)offset(identity);
@@ -172,25 +210,12 @@ DWORD getrbxsc() {
 	return Memory::scan((BYTE*)&sc, (BYTE*)"xxxx", PAGE_READWRITE);
 }
 
-typedef int(*rluanewthread) (int L);
-rluanewthread rbxnewthread = (rluanewthread)unprotect(offset(newthread));
-
 DWORD getrbxls(DWORD sc) {
 	DWORD v41 = sc;
-	DWORD v49 = 0;
+	DWORD v49 = 1;
 
-	DWORD v50 = v41 + 56 * v49 + 164 + *(DWORD *)(v41 + 56 * v49 + 164);
-	return rbxnewthread(v50);
-}
-
-void insert(lua_State *L, int tbl_idx, int val_idx) {
-	int e;
-	for (e = luaL_getn(L, tbl_idx) + 1; e > 1; e--) {
-		lua_rawgeti(L, tbl_idx, e - 1);
-		lua_rawseti(L, tbl_idx, e);
-	}
-	lua_pushvalue(L, val_idx);
-	lua_rawseti(L, tbl_idx, 1);
+	DWORD v50 = (v41 + 56 * v49 + 164) ^ *(DWORD *)(v41 + 56 * v49 + 164);
+	return v50;
 }
 
 typedef void(*rluagetfield) (int L, int idx, const char *k);
@@ -234,20 +259,12 @@ const char* rbxtolstring(int L, int idx, unsigned int len)
 	return rbx_tolstring(L, idx, len);
 }
 
-typedef int(*rluatoboolean) (int L, int idx);
-rluatoboolean rbx_toboolean = (rluatoboolean)unprotect(offset(toboolean));
+typedef void(*rluapushcclosure) (int L, lua_CFunction f, int n);
+rluapushcclosure rbx_pushcclosure = (rluapushcclosure)unprotect(offset(pushcclosure));
 
-int rbxtoboolean(int L, int idx)
+void rbxpushcclosure(int L, lua_CFunction f, int n)
 {
-	return rbx_toboolean(L, idx);
-}
-
-typedef double(*rluatonumber) (int L, int idx);
-rluatonumber rbx_tonumber = (rluatonumber)unprotect(offset(tonumber));
-
-double rbxtonumber(int L, int idx)
-{
-	return rbx_tonumber(L, idx);
+	rbx_pushcclosure(L, f, n);
 }
 
 typedef void(*rluapushstring) (int L, const char* s);
@@ -268,7 +285,7 @@ int rbxpushrealobject(int L, TValue *o) {
 	return 0;
 }
 
-int rbxpush(int L, r_TValue *o) { //added for purposes of function handling, think of another way to do this, maybe a union
+/*int rbxpush(int L, r_TValue *o) { //added for purposes of function handling, think of another way to do this, maybe a union
 	if (o == NULL) {
 		return 1;
 	}
@@ -284,4 +301,54 @@ rluaremove rbx_remove = (rluaremove)unprotect(offset(Remove));
 void rbxremove(int L, int idx)
 {
 	rbx_remove(L, idx);
+}
+
+/*typedef DWORD*(*rluaindex2adr) (DWORD L, int idx);
+rluaindex2adr rbx_index2adr = (rluaindex2adr)unprotect(offset(Index2adr));
+
+DWORD * rbxindex2adr(DWORD L, int idx)
+{
+	return rbx_index2adr(L, idx);
+}
+
+void rbxrawgeti(int L, int idx, int n){
+	r_TValue *obj = (r_TValue *)rbxindex2adr(L, idx)[1];
+	r_Table *tbl = obj->value.gc
+	L>top = tbl.arr[arg3];
+	->top += sizeof(r_TValue)
+}*/
+
+void set_jb(unsigned int addr)
+{
+	DWORD o_buff;
+	VirtualProtect((void*)addr, 5, PAGE_EXECUTE_READWRITE, &o_buff);
+	*(char*)addr = 0xEB;
+	VirtualProtect((void*)addr, 5, o_buff, &o_buff);
+}
+
+void res_jb(unsigned int addr)
+{
+	DWORD o_buff;
+	VirtualProtect((void*)addr, 5, PAGE_EXECUTE_READWRITE, &o_buff);
+	*(char*)addr = 0x72;
+	VirtualProtect((void*)addr, 5, o_buff, &o_buff);
+}
+
+typedef int(*rluaref) (int L, int t);
+rluaref rbx_ref = (rluaref)offset(aRef);
+
+int rbxref(int L, int t) {
+	set_jb(offset(refsec1));
+	set_jb(offset(refsec2));
+	return rbx_ref(L, t);
+	res_jb(offset(refsec1));
+	res_jb(offset(refsec2));
+}
+
+typedef void(*rluarawgeti) (int L, int index, int n);
+rluarawgeti rbx_rawgeti = (rluarawgeti)unprotect(offset(rawgeti));
+
+void rbxrawgeti(int L, int index, int n)
+{
+	rbx_rawgeti(L, index, n);
 }

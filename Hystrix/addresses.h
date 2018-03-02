@@ -2,23 +2,22 @@
 
 #define offset(addr) (addr - 0x400000 + (DWORD)GetModuleHandle(NULL))
 
-//DONT FORGET TO UPDATE GETSTATE: UPDATOED
-enum {
-	Remove = 0x723320, //u
-	pcall = 0x722790, //u
-	penvcheck = 0x71AF8D, //u
-	newthread = 0x722460, //u
-	scriptcontext = 0x100B590, //u
-	getmetatable = 0x721CA0, //u
-	xorconst = 0x14A26F0, //u
-	getfield = 0x7219D0, //u
-	setfield = 0x7236F0, //u
-	pushstring = 0x722D50, //u
-	//pushnumber = 0x722CC0, //FUCKING FIX THIS NNOOB
-	tolstring = 0x723D10, //u
-	toboolean = 0x723C50, //u
-	tonumber = 0x723FF0, //u
-	identity = 0x158AE14, //u
-	L_top = 32, //u
-	L_base = 20 //u
-};
+//DONT FORGET TO UPDATE GETSTATE: updated
+
+#define aRef	0x720DE0
+#define refsec1	0x720E3C
+#define refsec2	0x720EB6
+#define rawgeti	0x726DB0
+#define	pushcclosure	0x7228E0 //unused leave it i cba
+#define	pcall	0x726520
+#define	penvcheck	0x71ECDD
+#define	scriptcontext	0x100D1B8
+#define	getmetatable	0x725A10
+#define	xorconst	0x14976D0
+#define	getfield	0x725720
+#define	setfield	0x727480
+#define	pushstring	0x726AE0
+#define	tolstring	0x727AA0
+#define	identity	0x1580F2C
+#define	L_top	12 //u
+#define	L_base	20 //u

@@ -5,27 +5,36 @@
 
 int functionHandler(lua_State *L)
 {
-	DWORD *addr = *(DWORD **)lua_touserdata(L, lua_upvalueindex(1));
+	//Closure *meme = *(Closure **)lua_touserdata(L, lua_upvalueindex(1));
+
+	int meme = (int)lua_tointeger(L, lua_upvalueindex(1));
 
 	int nargs = lua_gettop(L);
 	int nres = rbxgettop(RbxState);
-	
-	DEBUGPRINT("\n%s", std::to_string((int)addr[1]).c_str());
-	rbxpush(RbxState, (r_TValue *)addr[1]);
 
-	DEBUGPRINT("\n%s", std::to_string(nargs).c_str());
+	DEBUGPRINT("\n%d", meme);
+
+	rbxrawgeti(RbxState, LUA_REGISTRYINDEX, meme);
+		/*if (meme->c.isC) {
+		rbxpushcclosure(RbxState, meme->c.f, 0);
+	}
+	else {
+		push(RbxState, *(DWORD*)&meme->l, RBXTFUNCTION);
+	}*/
+
+	DEBUGPRINT("\n%d", nargs);
 	for (auto argIdx = 1; argIdx <= nargs; argIdx++) {
 		wrap(L, TO_RBX, argIdx);
 	}
 	
 	rbxpcall(RbxState, nargs, LUA_MULTRET, 0);
-	nres = (rbxgettop(RbxState) - nres) + 1;
+	nres = rbxgettop(RbxState) - nres;
 
 	for (auto resIdx = -(nres); resIdx < 0; resIdx++) {
 		wrap(L, resIdx, FROM_RBX);
 	}
 
-	DEBUGPRINT("\n%s", std::to_string(nres).c_str());
+	DEBUGPRINT("\n%d", nres);
 	return nres;
 }
 
@@ -59,6 +68,7 @@ int wrappedMM(lua_State *L, const char *mm)
 void wrap(lua_State *L, int direction, int idx) {
 	if (direction == 1) {
 		DWORD rbxAddr = rbxindex2adr(RbxState, idx)[1];
+		r_TValue* rTVal = (r_TValue *)rbxAddr;
 		TValue *curr;
 		switch (rbxtype(RbxState, idx))
 		{
@@ -106,36 +116,40 @@ void wrap(lua_State *L, int direction, int idx) {
 			lua_pushcfunction(L, RobloxLen);
 			lua_setfield(L, -2, "__len");
 			lua_setmetatable(L, -2);
-			printf("\r\nLUD, UD or Table");
+			DEBUGPRINT("\r\nLUD, UD or Table");
 			break;
 		case RBXTBOOLEAN:
-			lua_pushboolean(L, rbxtoboolean(RbxState, idx));
-			printf("\r\nBoolean");
+			lua_pushboolean(L, rTVal->value.b);
+			DEBUGPRINT("\r\nBoolean");
 			break;
 		case RBXTNUMBER:
-			lua_pushnumber(L, rbxtonumber(RbxState, idx));
+			lua_pushnumber(L, rTVal->value.n);
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
-			printf("\nNumber");
+			DEBUGPRINT("\nNumber");
 			break;
 		case RBXTSTRING:
 			lua_pushstring(L, rbxtostring(RbxState, idx));
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
-			printf("\nString");
+			DEBUGPRINT("\nString");
 			break;
 		case RBXTFUNCTION: {
-			DWORD **ud = (DWORD **)lua_newuserdata(L, sizeof(DWORD *));
-			*ud = rbxindex2adr(RbxState, idx);
+			/*Closure **meme = (Closure **)lua_newuserdata(L, sizeof(Closure));
+			r_TValue *rbxtval = (r_TValue *)rbxAddr;
+			*meme = &rbxtval->value.gc->cl;*/
+			rbxpushvalue(RbxState, idx);
+			lua_pushinteger(L, rbxref(RbxState, LUA_REGISTRYINDEX));
+			DEBUGPRINT("\n%d", (int)lua_tointeger(L, -1));
 			lua_pushcclosure(L, functionHandler, 1);
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
-			printf("\nFunction");
+			DEBUGPRINT("\nFunction");
 			break;
 		}
 		default:
 			lua_pushnil(L);
-			printf("\nOther/nil");
+			DEBUGPRINT("\nOther/nil");
 			break;
 		}
 	}
@@ -145,7 +159,7 @@ void wrap(lua_State *L, int direction, int idx) {
 
 		if (lua_type(L, idx) == LUA_TSTRING) {
 			rbxpushstring(RbxState, lua_tostring(L, idx));
-			printf("\nPushed string");
+			DEBUGPRINT("\nPushed string");
 		}
 		else if (rbxpushrealobject(RbxState, localAddr)) {
 			switch (lua_type(L, idx))
@@ -158,26 +172,25 @@ void wrap(lua_State *L, int direction, int idx) {
 				break;
 			case LUA_TBOOLEAN:
 				rbxpushboolean(RbxState, localAddr->value.b);
-				printf("\nPushed boolean");
+				DEBUGPRINT("\nPushed boolean");
 				break;
 			case LUA_TNUMBER:
 				rbxpushnumber(RbxState, localAddr->value.n);
-				printf("\nPushed number");
+				DEBUGPRINT("\nPushed number");
 				break;
 			case LUA_TSTRING:
 				rbxpushstring(RbxState, lua_tostring(L, idx));
-				printf("\nPushed string");
+				DEBUGPRINT("\nPushed string");
 				break;
 			default:
 				rbxpushnil(RbxState);
-				printf("\nPushed nil/other unhandled type!");
+				DEBUGPRINT("\nPushed nil/other unhandled type!");
 				break;
 			}
 		}
 		else {
-			printf("\nPushed real object");
+			DEBUGPRINT("\nPushed real object");
 		}
-
 	}
 }
 

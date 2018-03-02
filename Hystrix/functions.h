@@ -65,17 +65,11 @@ int rbxgetmetatable(int L, int objindex);
 
 void rbxgetfield(int L, int idx, const char *k);
 
-void insert(lua_State *L, int tbl_idx, int val_idx);
-
 void rbxpushstring(int L, const char *s);
 
 int rbxpcall(int L, int nargs, int nresults, int errfunc = 0);
 
 const char* rbxtolstring(int L, int idx, unsigned int len);
-
-int rbxtoboolean(int L, int idx);
-
-double rbxtonumber(int L, int idx);
 
 void rbxpushboolean(DWORD L, int b);
 
@@ -89,6 +83,13 @@ typedef struct rbx_TValue {
 	RBXTVALUEFIELDS;
 } r_TValue;
 
-void rbxremove(int L, int idx);
+#define push(L, obj, type) { int v2 = *(DWORD *)(L + L_top); \
+    *(DWORD *)v2 = obj; \
+    *(DWORD *)(v2 + 8) = type; \
+    *(DWORD *)(L + L_top) += 16; }
 
-int rbxpush(int L, r_TValue *o);
+void rbxpushcclosure(int L, lua_CFunction f, int n);
+
+void rbxrawgeti(int L, int index, int n);
+
+int rbxref(int L, int t);
