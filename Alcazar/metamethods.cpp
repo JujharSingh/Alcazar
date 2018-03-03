@@ -57,7 +57,8 @@ int functionHandler(lua_State *L)
 	rbxpush(RbxState, rbxtval);
 
 	DEBUGPRINT("\n%d", nargs);
-	for (auto argIdx = 0; argIdx < nargs; argIdx++) {
+
+	for (auto argIdx = 1; argIdx <= nargs; argIdx++) {
 		wrap(L, TO_RBX, argIdx);
 		DEBUGPRINT("\nWrapped arg!");
 	}
@@ -65,12 +66,14 @@ int functionHandler(lua_State *L)
 	rbxpcall(RbxState, nargs, LUA_MULTRET, 0);
 	nres = rbxgettop(RbxState) - nres;
 
+	DEBUGPRINT("\n%d", nres);
+
 	for (auto resIdx = -(nres); resIdx < 0; resIdx++) {
 		wrap(L, FROM_RBX, resIdx);
 		DEBUGPRINT("\nWrapped ret!");
 	}
 
-	DEBUGPRINT("\n%d", nres);
+	
 	return nres;
 }
 
