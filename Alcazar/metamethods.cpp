@@ -49,12 +49,14 @@ int functionHandler(lua_State *L)
 {
 	DWORD addr = *(DWORD *)lua_touserdata(L, lua_upvalueindex(1));
 	printf("\n%d", addr);
-	r_TValue *rbxtval = (r_TValue *)addr;
-
+	
 	int nargs = lua_gettop(L);
 	int nres = rbxgettop(RbxState);
 
+	r_TValue *rbxtval = (r_TValue *)addr;
 	rbxpush(RbxState, rbxtval);
+
+//	rbxpush(RbxState, (r_TValue*)nullptr);
 
 	DEBUGPRINT("\n%d", nargs);
 
@@ -105,7 +107,7 @@ int wrappedMM(lua_State *L, const char *mm)
 }
 
 void wrap(lua_State *L, int direction, int idx) {
-	if (direction == 1) {
+	if (direction == FROM_RBX) {
 		DWORD rbxAddr = rbxindex2adr(RbxState, idx)[1];
 		r_TValue* rTVal = (r_TValue *)rbxAddr;
 		TValue *curr;
@@ -188,7 +190,7 @@ void wrap(lua_State *L, int direction, int idx) {
 			break;
 		}
 	}
-	else if(direction == 0)
+	else if(direction == TO_RBX)
 	{
 		TValue *localAddr = index2adr(L, idx);
 
