@@ -3,26 +3,71 @@
 #include "functions.h"
 #include "main.h"
 
+const char *typeToString(int type) {
+	const char* LookupTable[] = {
+		"NIL", "LIGHTUSERDATA", "NUMBER" ,
+		"BOOLEAN", "STRING", "THREAD",
+		"FUNCTION", "TABLE", "USERDATA",
+		"PROTO", "UPVALUE"
+	};
+
+	return LookupTable[type];
+}
+
+int stackDump(lua_State *L) {
+	int i;
+	int top = rbxgettop(RbxState);
+	for (i = 1; i <= top; i++) {  /* repeat for each level */
+		r_TValue *rval = (r_TValue *)rbxindex2adr(RbxState, i);
+		int t = rbxtype(RbxState, i);
+		switch (t) {
+
+		case RBXTSTRING:  /* strings */
+			printf("STRING: %s'", rbxtostring(RbxState, i));
+			break;
+
+		case RBXTBOOLEAN:  /* booleans */
+			printf(rval->value.b ? "true" : "false");
+			break;
+
+		case RBXTNUMBER:  /* numbers */
+			printf("NUMBER: %g", rval->value.n);
+			break;
+
+		default:  /* other values */
+			printf("OTHER (TYPE): %s", typeToString(t));
+			break;
+
+		}
+		printf("  ");  /* put a separator */
+	}
+	printf("\n");  /* end the listing */
+	return 0;
+}
+
 int functionHandler(lua_State *L)
 {
-	DWORD *addr = (DWORD *)lua_touserdata(L, lua_upvalueindex(1));
+	DWORD addr = *(DWORD *)lua_touserdata(L, lua_upvalueindex(1));
+	printf("\n%d", addr);
+	r_TValue *rbxtval = (r_TValue *)addr;
 
 	int nargs = lua_gettop(L);
 	int nres = rbxgettop(RbxState);
 
-	DEBUGPRINT("\n%d", addr);
-	rbxpush(RbxState, (r_TValue *)addr);
+	rbxpush(RbxState, rbxtval);
 
 	DEBUGPRINT("\n%d", nargs);
-	for (auto argIdx = 1; argIdx <= nargs; argIdx++) {
+	for (auto argIdx = 0; argIdx < nargs; argIdx++) {
 		wrap(L, TO_RBX, argIdx);
+		DEBUGPRINT("\nWrapped arg!");
 	}
 
 	rbxpcall(RbxState, nargs, LUA_MULTRET, 0);
-	nres = (rbxgettop(RbxState) - nres);
+	nres = rbxgettop(RbxState) - nres;
 
 	for (auto resIdx = -(nres); resIdx < 0; resIdx++) {
 		wrap(L, FROM_RBX, resIdx);
+		DEBUGPRINT("\nWrapped ret!");
 	}
 
 	DEBUGPRINT("\n%d", nres);
@@ -126,13 +171,9 @@ void wrap(lua_State *L, int direction, int idx) {
 			DEBUGPRINT("\nString");
 			break;
 		case RBXTFUNCTION: {
-			DWORD *meme = (DWORD *)lua_newuserdata(L, sizeof(DWORD *));
+			DWORD *meme = (DWORD *)lua_newuserdata(L, sizeof(DWORD));
 			*meme = rbxAddr;
 			lua_pushcclosure(L, functionHandler, 1);
-			//rbxpushvalue(RbxState, idx);
-			/*lua_pushinteger(L, rbxref(RbxState, LUA_REGISTRYINDEX));
-			DEBUGPRINT("\n%d", (int)lua_tointeger(L, -1));
-			lua_pushcclosure(L, functionHandler, 1);*/
 			curr = index2adr(L, -1);
 			curr->rbxaddr = rbxAddr;
 			DEBUGPRINT("\nFunction");

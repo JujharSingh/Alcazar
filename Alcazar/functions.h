@@ -29,7 +29,7 @@ extern "C" {
 #define RBXTUSERDATA		8 
 #define RBXTTHREAD		5 
 #define RBXTPROTO		9
-#define RBXTUPVAL		1
+#define RBXTUPVAL		10
 
 // #define _DEBUG
 
@@ -95,3 +95,5 @@ void rbxrawgeti(int L, int index, int n);
 int rbxref(int L, int t);
 
 int rbxpush(int L, r_TValue *o);
+
+DWORD * rbxindex2adr(DWORD L, int idx);

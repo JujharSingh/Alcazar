@@ -152,7 +152,7 @@ void rbxpushboolean(DWORD L, int b) {
 	*(DWORD *)(L + L_top) += 16;
 }
 
-DWORD* rbxindex2adr(DWORD L, int idx) {
+/*DWORD* rbxindex2adr(DWORD L, int idx) {
 	if (idx <= 0) {
 		if (idx <= -10000) {
 			return (DWORD*)(16 * (-10002 - idx) + 8);
@@ -165,7 +165,9 @@ DWORD* rbxindex2adr(DWORD L, int idx) {
 		if ((unsigned int)(16 * idx + *(DWORD*)(L + L_base) - 16) < *(DWORD*)(L + L_top))
 			return (DWORD*)(16 * idx + *(DWORD*)(L + L_base) - 16);
 	}
-}
+}*/
+
+
 
 void rbxpushvalue(DWORD L, int idx) {
 	DWORD* v2 = 0;
@@ -193,6 +195,7 @@ void hystrix_setup(lua_State *L){
 
 #ifdef _DEBUG
 	lua_register(L, "DebugPrint", hysprint);
+	lua_register(L, "StackDump", stackDump);
 #endif // _DEBUG
 
 	lua_pushvalue(L, LUA_GLOBALSINDEX);
@@ -301,9 +304,9 @@ rluaremove rbx_remove = (rluaremove)unprotect(offset(Remove));
 void rbxremove(int L, int idx)
 {
 	rbx_remove(L, idx);
-}
+}*/
 
-/*typedef DWORD*(*rluaindex2adr) (DWORD L, int idx);
+typedef DWORD*(*rluaindex2adr) (DWORD L, int idx);
 rluaindex2adr rbx_index2adr = (rluaindex2adr)unprotect(offset(Index2adr));
 
 DWORD * rbxindex2adr(DWORD L, int idx)
@@ -311,38 +314,18 @@ DWORD * rbxindex2adr(DWORD L, int idx)
 	return rbx_index2adr(L, idx);
 }
 
-void rbxrawgeti(int L, int idx, int n){
+/*void rbxrawgeti(int L, int idx, int n){
 	r_TValue *obj = (r_TValue *)rbxindex2adr(L, idx)[1];
 	r_Table *tbl = obj->value.gc
 	L>top = tbl.arr[arg3];
 	->top += sizeof(r_TValue)
 }*/
 
-void set_jb(unsigned int addr)
-{
-	DWORD o_buff;
-	VirtualProtect((void*)addr, 5, PAGE_EXECUTE_READWRITE, &o_buff);
-	*(char*)addr = 0xEB;
-	VirtualProtect((void*)addr, 5, o_buff, &o_buff);
-}
-
-void res_jb(unsigned int addr)
-{
-	DWORD o_buff;
-	VirtualProtect((void*)addr, 5, PAGE_EXECUTE_READWRITE, &o_buff);
-	*(char*)addr = 0x72;
-	VirtualProtect((void*)addr, 5, o_buff, &o_buff);
-}
-
 typedef int(*rluaref) (int L, int t);
 rluaref rbx_ref = (rluaref)offset(aRef);
 
 int rbxref(int L, int t) {
-	set_jb(offset(refsec1));
-	set_jb(offset(refsec2));
 	return rbx_ref(L, t);
-	res_jb(offset(refsec1));
-	res_jb(offset(refsec2));
 }
 
 typedef void(*rluarawgeti) (int L, int index, int n);

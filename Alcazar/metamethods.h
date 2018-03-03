@@ -39,3 +39,5 @@ int wrappedMM(lua_State *L, const char *mm);
 
 #define TO_RBX		0
 #define FROM_RBX	1
+
+int stackDump(lua_State *L);

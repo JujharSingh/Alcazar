@@ -5,6 +5,7 @@
 //DONT FORGET TO UPDATE GETSTATE: updated
 
 #define aRef	0x720DE0
+#define Index2adr	0x71D580 
 #define refsec1	0x720E3C
 #define refsec2	0x720EB6
 #define rawgeti	0x726DB0
