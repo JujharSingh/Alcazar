@@ -13,6 +13,10 @@ extern "C" { //ya its c tell the linker
 #include "lua-5.1.5/lualib.h"
 } //include lua libs 
 
+// this is totally not skidded
+// lmfao this guy is so gay
+// he has to skid off eternal
+// exx dee
 DWORD unprotect(DWORD addr)
 {
 	BYTE* tAddr = (BYTE *)addr;
