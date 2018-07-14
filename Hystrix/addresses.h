@@ -15,6 +15,7 @@ enum {
 	setfield = 0x7236F0, //u
 	pushstring = 0x722D50, //u
 	//pushnumber = 0x722CC0, //FUCKING FIX THIS NNOOB
+	// yea come on dude ubelievable fix that shit.
 	tolstring = 0x723D10, //u
 	toboolean = 0x723C50, //u
 	tonumber = 0x723FF0, //u
